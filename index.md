@@ -1,9 +1,17 @@
-Okay, let's enhance the guide for a better GitHub Pages experience by adding links to official resources and ensuring the formatting is clean. GitHub Pages automatically renders Markdown files (index.md or README.md) into websites, and fenced code blocks usually get a copy button.
+# Local AI Assistant in Terminal using Raspberry Pi 5 (4GB) and Ollama
 
-Here is the enhanced guide:
+*Guide Version: 1.0 (Based on testing April 2025)*
 
-Markdown
+## Introduction
 
+Welcome! This guide details how to set up a private, free AI assistant accessible directly from your Linux terminal. We will use a [Raspberry Pi 5](https://www.raspberrypi.com/products/raspberry-pi-5/) (specifically tested on a **4GB RAM model**) to host a local Large Language Model (LLM) via [Ollama](https://ollama.com/), and interact with it from a Linux computer (e.g., running [Pop!_OS](https://pop.system76.com/), [Ubuntu](https://ubuntu.com/), [Fedora](https://fedoraproject.org/), [Arch Linux](https://archlinux.org/)) using a simple bash function.
+
+The result is a convenient command (`askpi`) you can run on your client computer to get coding help, explanations, or boilerplate code generated locally, without relying on cloud services.
+
+* **Benefit:** Private, free, offline-capable AI assistance.
+* **Why this method?** While tools like [`mods`](https://github.com/charmbracelet/mods) or [`sgpt`](https://github.com/TheR1D/shell_gpt) exist, significant configuration challenges were encountered during testing on this specific setup. This guide uses a more direct [`curl`](https://curl.se/)-based approach which proved reliable for interacting with the Ollama API running on the Raspberry Pi.
+
+**Windows Users:** For instructions on connecting from a Windows computer, please see the [Windows Client Guide](windows-client-guide.md).
 # Local AI Assistant in Terminal using Raspberry Pi 5 (4GB) and Ollama
 
 *Guide Version: 1.0 (Based on testing April 2025)*
@@ -323,3 +331,6 @@ You can now use the `askpi` command directly in your client computer's terminal 
 * **Client Tool Alternatives:** This guide uses `curl` due to configuration issues encountered with [`mods`](https://github.com/charmbracelet/mods) and [`sgpt`](https://github.com/TheR1D/shell_gpt) in testing. Those tools might work with different versions or further debugging, but this method proved most reliable for this specific Pi 5 (4GB) + Ollama setup.
 
 ---
+## Conclusion
+
+Congratulations! You've set up a functional, private AI assistant using your Raspberry Pi and Ollama. The `askpi` command provides a simple, reliable interface for leveraging your local LLM directly from your terminal for coding and technical tasks. Enjoy experimenting!
