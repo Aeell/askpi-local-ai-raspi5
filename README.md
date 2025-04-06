@@ -38,4 +38,6 @@ askpi "Write a python function to reverse a string"
 askpi "Explain how SSH port forwarding works"
 
 Notes
-This guide uses a direct curl-based approach for the client-server interaction. While other tools like mods or sgpt exist, they presented configuration challenges during the testing phase for this specific setup, making the curl method more reliable in this context. The full guide provides more details.
+This guide uses a direct curl-based approach for the client-server interaction.
+While other tools like mods or sgpt exist, they presented configuration challenges during the testing phase for this specific setup,
+ making the curl method more reliable in this context. The full guide provides more details.
