@@ -1,6 +1,6 @@
 # Local AI Assistant in Terminal using Raspberry Pi 5 (4GB) and Ollama
 
-*Guide Version: 1.0 (Based on testing April 2025)*
+*Guide Version: 1.1 (Updated: 2025-04-07)*
 
 ## Introduction
 
@@ -12,18 +12,18 @@ The result is a convenient command (`askpi`) you can run on your client computer
 * **Why this method?** While tools like [`mods`](https://github.com/charmbracelet/mods) or [`sgpt`](https://github.com/TheR1D/shell_gpt) exist, significant configuration challenges were encountered during testing on this specific setup. This guide uses a more direct [`curl`](https://curl.se/)-based approach which proved reliable for interacting with the Ollama API running on the Raspberry Pi.
 
 **Windows Users:** For instructions on connecting from a Windows computer, please see the [Windows Client Guide](windows-client-guide.md).
-# Local AI Assistant in Terminal using Raspberry Pi 5 (4GB) and Ollama
 
-*Guide Version: 1.0 (Based on testing April 2025)*
+---
 
-## Introduction
-
-Welcome! This guide details how to set up a private, free AI assistant accessible directly from your Linux terminal. We will use a [Raspberry Pi 5](https://www.raspberrypi.com/products/raspberry-pi-5/) (specifically tested on a **4GB RAM model**) to host a local Large Language Model (LLM) via [Ollama](https://ollama.com/), and interact with it from a Linux computer (e.g., running [Pop!_OS](https://pop.system76.com/), [Ubuntu](https://ubuntu.com/), [Fedora](https://fedoraproject.org/), [Arch Linux](https://archlinux.org/)) using a simple bash function.
-
-The result is a convenient command (`askpi`) you can run on your client computer to get coding help, explanations, or boilerplate code generated locally, without relying on cloud services.
-
-* **Benefit:** Private, free, offline-capable AI assistance.
-* **Why this method?** While tools like [`mods`](https://github.com/charmbracelet/mods) or [`sgpt`](https://github.com/TheR1D/shell_gpt) exist, significant configuration challenges were encountered during testing on this specific setup. This guide uses a more direct [`curl`](https://curl.se/)-based approach which proved reliable for interacting with the Ollama API running on the Raspberry Pi.
+## Table of Contents
+* [Introduction](#introduction)
+* [Prerequisites and Tools Needed](#prerequisites-and-tools-needed)
+* [Phase 1: Raspberry Pi Setup (Ollama Server)](#phase-1-raspberry-pi-setup-ollama-server)
+* [Phase 2: Linux Computer Setup (Client)](#phase-2-linux-computer-setup-client)
+* [Phase 3: Usage](#phase-3-usage)
+* [Troubleshooting & Notes](#troubleshooting--notes)
+* [Publishing to GitHub Pages](#publishing-to-github-pages)
+* [Conclusion](#conclusion)
 
 ---
 
@@ -59,10 +59,16 @@ Before you start, ensure you have the required hardware and software.
 
 **3. Large Language Model (LLM):**
 
-* **Model:** `gemma:2b`
+* **Model:** `gemma:2b` (Recommended for 4GB Pi)
     * **Source:** Google ([https://ai.google.dev/gemma](https://ai.google.dev/gemma))
     * **Ollama Hub:** [https://ollama.com/library/gemma](https://ollama.com/library/gemma) (We'll use the `gemma:2b` tag)
-    * **Reason:** This 2-billion parameter model performs well and reliably fits within the 4GB RAM constraints of the tested Raspberry Pi 5. Larger models like Phi-3 Mini were found to cause memory issues during testing on this hardware.
+    * **Reason:** This 2-billion parameter model performs well and reliably fits within the 4GB RAM constraints of the tested Raspberry Pi 5.
+* **Model Flexibility (for 8GB+ RAM Pi):**
+    * If your Raspberry Pi has **8GB of RAM or more**, you can likely run larger, more capable models. Examples include `phi3:3.8b-mini-128k-instruct-q4_K_M` or models from the Llama 3 family (e.g., `llama3:8b-instruct-q4_K_M`).
+    * To use a different model:
+        1.  Pull the desired model on the Pi (e.g., `ollama pull llama3:8b-instruct-q4_K_M`). Check [Ollama Hub](https://ollama.com/library) for available models and tags.
+        2.  Update the `target_model` variable inside the `askpi` function (in `~/.bashrc` or `~/.zshrc` on your client computer) to match the new model name/tag.
+        3.  Run `source ~/.bashrc` (or `source ~/.zshrc`) on the client.
 
 ---
 
@@ -89,7 +95,7 @@ Configure your Raspberry Pi to host the Ollama service and the LLM.
     ```
 
 3.  **Configure Ollama for Network Access:** (Run *on the Pi*)
-    Allow Ollama to accept connections from your client computer. Edit the [systemd](https://systemd.io/) service configuration using `systemctl edit`:
+    Allow Ollama to accept connections from your client computer. Edit the [systemd](https://systemd.io/) service configuration using [`systemctl edit`](https://www.freedesktop.org/software/systemd/man/systemctl.html#edit):
     ```bash
     sudo systemctl edit ollama.service
     ```
@@ -117,7 +123,7 @@ Configure your Raspberry Pi to host the Ollama service and the LLM.
     ```
 
 5.  **Pull the LLM:** (Run *on the Pi*)
-    Download the [`gemma:2b`](https://ollama.com/library/gemma) model (recommended for 4GB RAM):
+    Download the `gemma:2b` model (recommended for 4GB RAM):
     ```bash
     ollama pull gemma:2b
     ```
@@ -228,6 +234,13 @@ This step involves adding a helper function to your shell's configuration file. 
         \"messages\": [ { \"role\": \"user\", \"content\": \"$prompt_content\" } ],
         \"stream\": false
       }" | jq -r '.message.content'
+
+      # Optional: Add checks here for curl/jq exit codes if needed
+      # local exit_code=$?
+      # if [ $exit_code -ne 0 ]; then
+      #  echo "Error: Command failed with exit code $exit_code." >&2
+      # fi
+      # return $exit_code
     }
     # --- End Custom Function ---
     ```
@@ -316,7 +329,7 @@ You can now use the `askpi` command directly in your client computer's terminal 
 ## Troubleshooting & Notes
 
 * **Finding Pi IP:** If your Pi's IP address changes, update the `pi_ollama_ip` variable inside the `askpi` function in your shell config file (`~/.bashrc` or `~/.zshrc`), then run `source ~/.bashrc` (or `source ~/.zshrc`) again. Consider setting a static IP or DHCP reservation for the Pi in your router settings.
-* **Check Ollama Service:** If `askpi` fails, SSH into the Pi and check the [systemd](https://systemd.io/) service using [`systemctl`](https://www.freedesktop.org/software/systemd/man/systemctl.html):
+* **Check Ollama Service:** If `askpi` fails, SSH into the Pi and check the service:
     ```bash
     sudo systemctl status ollama.service
     ```
@@ -324,13 +337,17 @@ You can now use the `askpi` command directly in your client computer's terminal 
     ```bash
     sudo systemctl restart ollama.service
     ```
-* **RAM Limits:** The 4GB Pi is limited. If `gemma:2b` causes "could not load model" errors (check Ollama logs on Pi), try `orca-mini`. Pull it (`ollama pull orca-mini`) and update the `target_model` in the `askpi` function.
-* **`jq` Error:** If `askpi` gives raw JSON or `jq` errors, ensure [`jq`](https://jqlang.github.io/jq/) is installed on your client computer (use the relevant command from Phase 2, Step 1).
+    Check its logs (`journalctl -u ollama.service -n 50 --no-pager`) for errors like "could not load model".
+* **RAM Limits & Model Choice:** The 4GB Pi is limited. If `gemma:2b` still causes "could not load model" errors, try an even smaller model like `orca-mini`. Pull it on the Pi (`ollama pull orca-mini`) and update the `target_model` variable in the `askpi` function. If you have an 8GB+ Pi, refer to the LLM Prerequisites section for trying larger models.
+* **`jq` Error:** If `askpi` gives raw JSON or `jq` errors, ensure [`jq`](https://jqlang.github.io/jq/) is installed on your client computer (use the command from Phase 2, Step 1).
 * **Network Issues:** Use [`ping`](https://man7.org/linux/man-pages/man8/ping.8.html) `YOUR_PI_IP_ADDRESS` from the client computer. Check firewalls on both devices (port 11434 needs to be allowed *incoming* on the Pi).
-* **Curl Timeouts:** Adjust `--connect-timeout` and `--max-time` in the `askpi` function if needed, but long waits often indicate Pi-side issues.
+* **Curl Timeouts:** Adjust `--connect-timeout` and `--max-time` in the `askpi` function if needed, but long waits often indicate Pi-side processing delays or model loading issues.
 * **Client Tool Alternatives:** This guide uses `curl` due to configuration issues encountered with [`mods`](https://github.com/charmbracelet/mods) and [`sgpt`](https://github.com/TheR1D/shell_gpt) in testing. Those tools might work with different versions or further debugging, but this method proved most reliable for this specific Pi 5 (4GB) + Ollama setup.
-
----
-## Conclusion
+* **`askpi` Enhancements:** Advanced users could modify the `askpi` function:
+    * Add more robust error checking (e.g., check `curl` exit status `$?`, verify JSON structure before `jq`).
+    * Read the Pi IP and model name from environment variables (`$PI_OLLAMA_IP`, `$ASKPI_MODEL`) or a config file (`~/.config/askpi/config`) instead of hardcoding them.
+    * Implement streaming output (using `stream: true` in the JSON and parsing the resulting stream) for a more interactive feel on long responses.
 
 Congratulations! You've set up a functional, private AI assistant using your Raspberry Pi and Ollama. The `askpi` command provides a simple, reliable interface for leveraging your local LLM directly from your terminal for coding and technical tasks. Enjoy experimenting!
+
+---
